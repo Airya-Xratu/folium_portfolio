@@ -1,0 +1,28 @@
+name: Merge develop -> main
+on:
+    push:
+        tags:
+            - "v*"
+        branches:
+            - develop
+
+jobs:
+    merge-to-main:
+        runs-on: ubuntu-latest
+        if: github.ref_type == 'tag'
+        steps:
+            - name: checkout main
+              uses: actions/checkout@v4
+              with:
+                  ref: main
+                  fetch-depth: 0
+                  token: ${{ secrets.FOLIO_PAT }}
+            - name: configure git
+              run: |
+                  git config user.name "folio.bot"
+                  git config user.email "panda.soft.group@gmail.com"
+            - name: fetch develop and merge
+              run: |
+                  git fetch origin develop
+                  git merge origin/develop --no-ff -m "chore: merge develop into main after tag ${{ github.ref_name }}"
+                  git push origin main
